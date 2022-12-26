@@ -10,15 +10,17 @@ import Divider from "../components/Divider";
 import GoogleButton from "../components/GoogleButton";
 import { sendPasswordResetEmail } from "firebase/auth/react-native";
 import { auth } from "../services/firebase";
-import { useAppDispatch } from "../redux";
+import { IAppState, useAppDispatch } from "../redux";
 import { setError, setLoading, setSuccess } from "../redux/auth";
 import ToastContainer from "../components/ToastContainer";
+import { useSelector } from "react-redux";
 
 const ResetPassword = ({
   navigation,
 }: RootStackScreenProps<"ResetPassword">) => {
+  const { currentUser: user } = useSelector((state: IAppState) => state.auth);
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(user?.email || "");
   const dispatch = useAppDispatch();
   const handleSubmit = () => {
     try {
@@ -78,7 +80,7 @@ const ResetPassword = ({
           color="#4DB192"
           style={{ marginRight: 2 }}
         />
-        <Text style={[styles.existing, styles.link]}>Back To Auth</Text>
+        <Text style={[styles.existing, styles.link]}>Go Back</Text>
       </Pressable>
     </SafeAreaView>
   );

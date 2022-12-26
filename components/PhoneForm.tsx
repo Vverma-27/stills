@@ -26,6 +26,7 @@ import {
   FirebaseRecaptchaVerifierModal,
 } from "expo-firebase-recaptcha";
 import { CountryList, CountryPicker } from "react-native-country-codes-picker";
+import useTimer from "../hooks/useTimer";
 
 const PhoneForm = (props: any) => {
   //   const [firstPassword, setFirstPassword] = useState("");
@@ -36,8 +37,8 @@ const PhoneForm = (props: any) => {
   //     props.verificationId
   //   );
   const [verificationCode, setVerificationCode] = React.useState("");
-  const [timer, setTimer] = useState(30);
   const attemptInvisibleVerification = false;
+  const [timer] = useTimer(30, props.verificationId);
   const [show, setShow] = useState(false);
   const [flag, setFlag] = useState("🇮🇳");
   const { loading } = useSelector((state: IAppState) => state.auth);
@@ -46,29 +47,35 @@ const PhoneForm = (props: any) => {
   // useEffect(() => {
   //   timerRef.current = timer;
   // }, [timer]);
-  useEffect(() => {
-    if (!props.verificationId) return;
-    console.log("🚀 ~ file: PhoneForm.tsx ~ line 49 ~ id ~ timer", "v changed");
-    setTimer(30);
-    const id = setInterval(() => {
-      // if (timer <= 0) {
-      //   clearInterval(id);
-      //   setTimer(30);
-      //   return;
-      // } else
-      setTimer((timer) => {
-        if (timer <= 0) {
-          clearInterval(id);
-          return 0;
-        }
-        return timer - 1;
-      });
-      // console.log("🚀 ~ file: PhoneForm.tsx ~ line 49 ~ id ~ timer", timer);
-    }, 1000);
-    return () => {
-      clearInterval(id);
-    };
-  }, [props.verificationId]);
+  // console.log(
+  //   "🚀 ~ file: PhoneForm.tsx ~ line 51 ~ useEffect ~ props.verificationId",
+  //   props.verificationId,
+  //   props.setPhone,
+  //   props.phone
+  // );
+  // useEffect(() => {
+  //   if (!props.verificationId) return;
+  //   console.log("🚀 ~ file: PhoneForm.tsx ~ line 49 ~ id ~ timer", "v changed");
+  //   setTimer(30);
+  //   const id = setInterval(() => {
+  //     // if (timer <= 0) {
+  //     //   clearInterval(id);
+  //     //   setTimer(30);
+  //     //   return;
+  //     // } else
+  //     setTimer((timer) => {
+  //       if (timer <= 0) {
+  //         clearInterval(id);
+  //         return 0;
+  //       }
+  //       return timer - 1;
+  //     });
+  //     // console.log("🚀 ~ file: PhoneForm.tsx ~ line 49 ~ id ~ timer", timer);
+  //   }, 1000);
+  //   return () => {
+  //     clearInterval(id);
+  //   };
+  // }, [props.verificationId]);
 
   return (
     <>
@@ -145,7 +152,7 @@ const PhoneForm = (props: any) => {
             setValue={props.setPhone}
           />
         </View>
-        {(!props.verificationId && (
+        {(!props.verificationId && !props.isNotAuth && (
           <Pressable style={styles.disclaimer} onPress={props.changeMode}>
             <Text style={styles.link}>Continue with email instead</Text>
           </Pressable>
@@ -179,7 +186,13 @@ const PhoneForm = (props: any) => {
         ) : null}
       </View>
       <SubmitButton
-        title={!props.verificationId ? "Send Code" : "Verify Code"}
+        title={
+          !props.verificationId
+            ? "Send Code"
+            : props.confirmTitle
+            ? props.confirmTitle
+            : "Verify Code"
+        }
         onPress={
           !props.verificationId
             ? props.sendVerificationCode

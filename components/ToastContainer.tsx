@@ -6,10 +6,6 @@ import { FontAwesome } from "@expo/vector-icons";
 
 const ToastContainer = () => {
   const { error, success } = useSelector((state: IAppState) => state.auth);
-  //   console.log(
-  //     "🚀 ~ file: ToastContainer.tsx ~ line 9 ~ ToastContainer ~ error",
-  //     error
-  //   );
   if (!error && !success) return null;
   return (
     <View style={[styles.toast, styles[`toast--${Boolean(error)}`]]}>

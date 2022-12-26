@@ -9,16 +9,16 @@ import {
 import React, { useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import Input from "../components/Input";
+import Input from "./Input";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import SubmitButton from "../components/SubmitButton";
+import SubmitButton from "./SubmitButton";
 import { RootStackScreenProps } from "../types";
-import GoogleButton from "../components/GoogleButton";
-import Divider from "../components/Divider";
+import GoogleButton from "./GoogleButton";
+import Divider from "./Divider";
 import { useDispatch, useSelector } from "react-redux";
 import { signUpUser } from "../redux/auth";
 import { IAppState, useAppDispatch } from "../redux";
-import ToastContainer from "../components/ToastContainer";
+import ToastContainer from "./ToastContainer";
 
 const SignUpEmailForm = (props: any) => {
   //   const [firstPassword, setFirstPassword] = useState("");
@@ -38,12 +38,14 @@ const SignUpEmailForm = (props: any) => {
           value={props.email}
           setValue={props.setEmail}
         />
-        <Pressable style={styles.disclaimer} onPress={props.changeMode}>
-          <Text style={styles.link}>Continue with phone number instead</Text>
-        </Pressable>
+        {props.title ? null : (
+          <Pressable style={styles.disclaimer} onPress={props.changeMode}>
+            <Text style={styles.link}>Continue with phone number instead</Text>
+          </Pressable>
+        )}
       </View>
       <SubmitButton
-        title="Continue"
+        title={props.title || "Continue"}
         onPress={props.handleSubmit}
         style={{ marginTop: 20, width: "100%" }}
         color="#4DB192"

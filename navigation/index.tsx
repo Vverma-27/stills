@@ -39,6 +39,9 @@ import { IAppState } from "../redux";
 import ProfileScreen from "../screens/ProfileScreen";
 import ProfileHeader from "../components/ProfileHeader";
 import SettingsScreen from "../screens/SettingsScreen";
+import SettingsEditScreen from "../screens/SettingsEdit";
+import ConfirmLogin from "../screens/ConfirmLogin";
+import AddFriends from "../screens/AddFriends";
 
 export default function Navigation({
   colorScheme,
@@ -46,10 +49,7 @@ export default function Navigation({
   colorScheme: ColorSchemeName;
 }) {
   return (
-    <NavigationContainer
-      linking={LinkingConfiguration}
-      theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-    >
+    <NavigationContainer linking={LinkingConfiguration} theme={DefaultTheme}>
       <RootNavigator />
     </NavigationContainer>
   );
@@ -72,7 +72,24 @@ function RootNavigator() {
         <>
           <Stack.Group>
             <Stack.Screen name="Root" component={BottomTabNavigator} />
+            <Stack.Screen name="AddFriends" component={AddFriends} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
+            <Stack.Screen
+              name="SettingsEdit"
+              component={SettingsEditScreen}
+              options={({ route }) => ({
+                headerShown: true,
+                headerBackImage: () => (
+                  <Ionicons name="chevron-back" size={24} color="#4DB192" />
+                ),
+                headerTitle: route.params.title,
+                headerTitleAlign: "left",
+                headerTitleStyle: {
+                  color: "#4DB192",
+                  textTransform: "capitalize",
+                },
+              })}
+            />
           </Stack.Group>
           <Stack.Group
             screenOptions={{
@@ -86,7 +103,15 @@ function RootNavigator() {
             }}
           >
             <Stack.Screen name="Settings" component={SettingsScreen} />
+            <Stack.Screen
+              name="ConfirmLogin"
+              component={ConfirmLogin}
+              options={{
+                title: "Authenticate",
+              }}
+            />
           </Stack.Group>
+          <Stack.Screen name="ResetPassword" component={ResetPassword} />
         </>
       ) : (
         <>

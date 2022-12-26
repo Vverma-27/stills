@@ -9,58 +9,39 @@ import {
 import React, { useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import Input from "../components/Input";
+import Input from "./Input";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import SubmitButton from "../components/SubmitButton";
+import SubmitButton from "./SubmitButton";
 import { RootStackScreenProps } from "../types";
-import GoogleButton from "../components/GoogleButton";
-import Divider from "../components/Divider";
+import GoogleButton from "./GoogleButton";
+import Divider from "./Divider";
 import { useDispatch, useSelector } from "react-redux";
 import { signUpUser } from "../redux/auth";
 import { IAppState, useAppDispatch } from "../redux";
-import ToastContainer from "../components/ToastContainer";
+import ToastContainer from "./ToastContainer";
 
-const SignUpPasswordForm = (props: any) => {
+const SignUpUsernameForm = (props: any) => {
   //   const [firstPassword, setFirstPassword] = useState("");
   //   const [lastPassword, setLastPassword] = useState("");
-  const dispatch = useAppDispatch();
-  const [errors, setErrors] = useState<string[]>([]);
   // const input =[null,null];
-  const passwordInputRef = useRef<TextInput>();
   const { loading } = useSelector((state: IAppState) => state.auth);
   return (
     <>
       <View style={styles.form}>
         <Input
-          label="Password"
-          //   icon="lock-closed"
-          type={props.showPassword ? "visible-password" : "default"}
-          returnKeyType="next"
-          isPassword={true}
-          //   ref={props.passwordInputRef}
-          showPassword={props.showPassword}
-          setShowPassword={props.setShowPassword}
-          placeholder="Enter your password"
-          value={props.password}
-          onSubmitEditing={() => passwordInputRef?.current?.focus()}
-          setValue={props.setPassword}
-        />
-        <Input
-          label="Re-enter Password"
-          //   icon="lock-closed"
-          type={props.showRePassword ? "visible-password" : "default"}
+          label="Username"
+          icon="person"
+          type="default"
           returnKeyType="done"
-          isPassword={true}
-          ref={passwordInputRef}
-          showPassword={props.showRePassword}
-          setShowPassword={props.setShowRePassword}
-          placeholder="Re-enter your password"
-          value={props.rePassword}
-          setValue={props.setRePassword}
+          placeholder="Enter your username"
+          blurOnSubmit={true}
+          value={props.username}
+          setValue={props.setUsername}
+          autoCapitalize={"none"}
         />
       </View>
       <SubmitButton
-        title="Continue"
+        title={props.title || "Continue"}
         onPress={props.handleSubmit}
         style={{ marginTop: 20, width: "100%" }}
         color="#4DB192"
@@ -70,7 +51,7 @@ const SignUpPasswordForm = (props: any) => {
   );
 };
 
-export default SignUpPasswordForm;
+export default SignUpUsernameForm;
 
 const styles = StyleSheet.create({
   container: {
@@ -87,7 +68,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "500",
     marginTop: 16,
-    textAlign: "center",
+    textAlign: "left",
     color: "rgba(0,0,0,0.4)",
   },
   form: { marginBottom: 20 },

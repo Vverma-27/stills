@@ -10,7 +10,13 @@ import { child, get, getDatabase, onValue, ref, set } from "firebase/database";
 import { auth, database } from "../../services/firebase";
 import { IAuthReducer, IUser } from "./types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getUserData, phoneNumberExists, setUserData } from "../../utils/api";
+import {
+  getUserData,
+  phoneNumberExists,
+  setUserData,
+  updateUserData,
+} from "../../utils/api";
+import { IAppState } from "..";
 const initialState: IAuthReducer = {
   // name: "Vihaan",
   currentUser: null,
@@ -66,6 +72,7 @@ export const signUpUser = createAsyncThunk(
         username: userData.username || displayName,
         age: userData.age,
         dob: userData.dob,
+        providerType: "email",
       });
     } catch (error: any) {
       console.log(error);
@@ -82,6 +89,24 @@ export const signUpUser = createAsyncThunk(
       } else {
         return rejectWithValue(errorMessage);
       }
+    }
+  }
+);
+
+export const updateUser = createAsyncThunk(
+  "auth/updateUser",
+  async (userData: Partial<IUser>, { rejectWithValue, getState }) => {
+    console.log("🚀 ~ file: index.ts ~ line 40 ~ userData", userData);
+    const state: any = getState();
+    try {
+      const user = await updateUserData({
+        uid: state.auth.currentUser.uid,
+        ...userData,
+      });
+      console.log("🚀 ~ file: index.ts ~ line 100 ~ user", user);
+      return user;
+    } catch (error: any) {
+      return rejectWithValue(error);
     }
   }
 );
@@ -131,18 +156,12 @@ export const loginUser = createAsyncThunk(
 
 export const signupUserPhone = createAsyncThunk(
   "auth/signupUserPhone",
-  async (
-    {
-      confirm,
-      verificationCode,
-      userData,
-    }: { confirm: any; verificationCode: string; userData: IUser },
-    { rejectWithValue }
-  ) => {
+  async (userData: IUser, { rejectWithValue }) => {
     try {
-      const { user } = await confirm.confirm(verificationCode);
-      console.log("🚀 ~ file: index.ts ~ line 143 ~ response", user);
-      const actualUser = await setUserData({ ...userData, uid: user.uid });
+      const actualUser = await setUserData({
+        ...userData,
+        providerType: "phone",
+      });
       console.log("🚀 ~ file: index.ts ~ line 145 ~ user", actualUser);
       return { user: actualUser };
       // console.log(actualUser);
@@ -166,19 +185,10 @@ export const signupUserPhone = createAsyncThunk(
 
 export const loginUserPhone = createAsyncThunk(
   "auth/loginUserPhone",
-  async (
-    {
-      confirm,
-      verificationCode,
-    }: // phoneNumber,
-    { confirm: any; verificationCode: string },
-    { rejectWithValue }
-  ) => {
+  async (uid: string, { rejectWithValue }) => {
     try {
-      const { user } = await confirm.confirm(verificationCode);
-      console.log("🚀 ~ file: index.ts ~ line 143 ~ response", user);
       //@ts-ignore
-      const actualUser: IUser = await getUserData(user.uid);
+      const actualUser: IUser = await getUserData(uid);
       if (!actualUser) return rejectWithValue("No User Found!");
       return { user: actualUser };
       // console.log(actualUser);
@@ -206,9 +216,13 @@ const authSlice: any = createSlice({
   reducers: {
     setError: (state, action) => {
       state.error = action.payload;
+      state.success = "";
+      state.loading = false;
     },
     setSuccess: (state, action) => {
+      state.error = "";
       state.success = action.payload;
+      state.loading = false;
     },
     setLoading: (state, action) => {
       state.loading = action.payload;
@@ -305,6 +319,25 @@ const authSlice: any = createSlice({
       // console.log(state);
     });
     builder.addCase(logOutUser.rejected, (state, { payload }: any) => {
+      state.success = "";
+      state.loading = false;
+      state.error = payload;
+      // console.log(payload);
+    });
+    builder.addCase(updateUser.pending, (state, action) => {
+      state.loading = true;
+    });
+    builder.addCase(updateUser.fulfilled, (state, { payload }) => {
+      state.error = "";
+      state.currentUser = { ...state.currentUser, ...payload };
+      console.log(
+        "🚀 ~ file: index.ts ~ line 354 ~ builder.addCase ~ payload",
+        payload
+      );
+      state.loading = false;
+      // console.log(state);
+    });
+    builder.addCase(updateUser.rejected, (state, { payload }: any) => {
       state.success = "";
       state.loading = false;
       state.error = payload;

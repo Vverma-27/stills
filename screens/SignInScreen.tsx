@@ -30,6 +30,11 @@ import PhoneForm from "../components/PhoneForm";
 import { phoneNumberExists } from "../utils/api";
 import { signInWithPhoneNumber } from "firebase/auth";
 import { auth } from "../services/firebase";
+import sendVerificationCode from "../utils/sendVerification";
+import {
+  PhoneAuthProvider,
+  signInWithCredential,
+} from "firebase/auth/react-native";
 
 const SignInScreen = ({ navigation }: RootStackScreenProps<"SignIn">) => {
   const [mode, setMode] = useState<"mobile" | "email">("email");
@@ -37,7 +42,7 @@ const SignInScreen = ({ navigation }: RootStackScreenProps<"SignIn">) => {
   const [phone, setPhone] = useState(0);
   const [countryCode, setCountryCode] = useState("+91");
   const [password, setPassword] = useState("");
-  const [confirmRes, setConfirmRes] = React.useState<any>({});
+  const [verificationId, setVerificationId] = useState("");
   const recaptchaVerifier = React.useRef<any>(null);
   const dispatch = useAppDispatch();
   const handleEmailSubmit = () => {
@@ -56,59 +61,80 @@ const SignInScreen = ({ navigation }: RootStackScreenProps<"SignIn">) => {
     dispatch(setLoading(false));
     dispatch(loginUser({ email, password }));
   };
-  const sendVerificationCode = async () => {
-    // The FirebaseRecaptchaVerifierModal ref implements the
-    // FirebaseAuthApplicationVerifier interface and can be
-    // passed directly to `verifyPhoneNumber`.
-    // console.log(
-    //   "🚀 ~ file: SignUpPhoneForm.tsx ~ line 53 ~ sendVerificationCode ~ props.verificationId",
-    //   "hello"
-    // );
+
+  const sendVerification = async () => {
+    if (!recaptchaVerifier.current) return;
     try {
-      if (!recaptchaVerifier.current) return;
       dispatch(setLoading(true));
       const phoneNumber = `${countryCode}${phone}`;
-      const phoneNumberExist = await phoneNumberExists(phoneNumber);
-      if (!phoneNumberExist)
-        dispatch(setError("No account linked to this number exists."));
-      else {
-        const response = await signInWithPhoneNumber(
-          auth,
-          phoneNumber,
-          recaptchaVerifier.current
-        );
-        //@ts-ignore
-        setConfirmRes(response);
-        // const phoneProvider = new PhoneAuthProvider(auth);
-        // const verificationId = await phoneProvider.verifyPhoneNumber(
-        //   `${countryCode}${phone}`,
-        //   recaptchaVerifier.current
-        // );
-        // setVerificationId(response.verificationId);
-        dispatch(setSuccess("Verification code has been sent to your mobile."));
-      }
-      dispatch(setLoading(false));
-    } catch (err: any) {
-      const { code, message } = err;
-      if (code === "auth/invalid-phone-number")
-        dispatch(setError("Invalid Phone Number"));
-      else if (code === "auth/too-many-requests")
-        dispatch(setError("Too many requests. Please try later."));
-      else dispatch(setError(message));
+      const verificationId = await sendVerificationCode(
+        phoneNumber,
+        (t: string) => {
+          dispatch(setError(t));
+        },
+        recaptchaVerifier.current,
+        true
+      );
+      setVerificationId(verificationId);
+    } catch (error) {
+      console.log(error);
     } finally {
-      dispatch(setLoading(false));
+      dispatch(setLoading(true));
     }
   };
+  // const sendVerificationCode = async () => {
+  //   // The FirebaseRecaptchaVerifierModal ref implements the
+  //   // FirebaseAuthApplicationVerifier interface and can be
+  //   // passed directly to `verifyPhoneNumber`.
+  //   // console.log(
+  //   //   "🚀 ~ file: SignUpPhoneForm.tsx ~ line 53 ~ sendVerificationCode ~ props.verificationId",
+  //   //   "hello"
+  //   // );
+  //   try {
+  //     if (!recaptchaVerifier.current) return;
+  //     dispatch(setLoading(true));
+  //     const phoneNumber = `${countryCode}${phone}`;
+  //     const phoneNumberExist = await phoneNumberExists(phoneNumber);
+  //     if (!phoneNumberExist)
+  //       dispatch(setError("No account linked to this number exists."));
+  //     else {
+  //       const response = await signInWithPhoneNumber(
+  //         auth,
+  //         phoneNumber,
+  //         recaptchaVerifier.current
+  //       );
+  //       //@ts-ignore
+  //       setConfirmRes(response);
+  //       // const phoneProvider = new PhoneAuthProvider(auth);
+  //       // const verificationId = await phoneProvider.verifyPhoneNumber(
+  //       //   `${countryCode}${phone}`,
+  //       //   recaptchaVerifier.current
+  //       // );
+  //       // setVerificationId(response.verificationId);
+  //       dispatch(setSuccess("Verification code has been sent to your mobile."));
+  //     }
+  //     dispatch(setLoading(false));
+  //   } catch (err: any) {
+  //     const { code, message } = err;
+  //     if (code === "auth/invalid-phone-number")
+  //       dispatch(setError("Invalid Phone Number"));
+  //     else if (code === "auth/too-many-requests")
+  //       dispatch(setError("Too many requests. Please try later."));
+  //     else dispatch(setError(message));
+  //   } finally {
+  //     dispatch(setLoading(false));
+  //   }
+  // };
   const handlePhoneSubmit = async (verificationCode: string) => {
     if (!phone) return dispatch(setError("Phone cannot be empty"));
     try {
       dispatch(setLoading(true));
-      dispatch(
-        loginUserPhone({
-          verificationCode,
-          confirm: confirmRes,
-        })
+      const cred = PhoneAuthProvider.credential(
+        verificationId,
+        verificationCode
       );
+      const { user } = await signInWithCredential(auth, cred);
+      dispatch(loginUserPhone(user.uid));
 
       // dispatch(setSu{ text: 'Phone authentication successful 👍' });
     } catch (err: any) {
@@ -144,10 +170,10 @@ const SignInScreen = ({ navigation }: RootStackScreenProps<"SignIn">) => {
             setPhone={setPhone}
             changeMode={() => setMode("email")}
             handleSubmit={handlePhoneSubmit}
-            verificationId={confirmRes?.verificationId}
+            verificationId={verificationId}
             countryCode={countryCode}
             setCountryCode={setCountryCode}
-            sendVerificationCode={sendVerificationCode}
+            sendVerificationCode={sendVerification}
             recaptchaVerifier={recaptchaVerifier}
           />
         )}
@@ -179,7 +205,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 20,
   },
-  form: { marginBottom: 20 },
+  form: { marginBottom: 20, width: "100%" },
   existing: {
     fontSize: 11,
     fontWeight: "900",

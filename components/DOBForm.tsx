@@ -9,12 +9,12 @@ import {
 import React, { useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import Input from "../components/Input";
+import Input from "./Input";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import SubmitButton from "../components/SubmitButton";
+import SubmitButton from "./SubmitButton";
 import { RootStackScreenProps } from "../types";
-import GoogleButton from "../components/GoogleButton";
-import Divider from "../components/Divider";
+import GoogleButton from "./GoogleButton";
+import Divider from "./Divider";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useDispatch, useSelector } from "react-redux";
 import { signUpUser } from "../redux/auth";
@@ -73,7 +73,7 @@ const SignUpDOBForm = (props: any) => {
           null}
       </View>
       <SubmitButton
-        title="Continue"
+        title={props.title || "Continue"}
         onPress={props.handleSubmit}
         style={{ marginTop: 20, width: "100%" }}
         color="#4DB192"

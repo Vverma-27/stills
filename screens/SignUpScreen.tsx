@@ -25,10 +25,10 @@ import {
 } from "../redux/auth";
 import { IAppState, useAppDispatch } from "../redux";
 import ToastContainer from "../components/ToastContainer";
-import SignUpNameForm from "../components/SignUpNameForm";
-import SignUpDOBForm from "../components/SignUpDOBForm";
-import SignUpPasswordForm from "../components/SignUpPasswordForm";
-import SignUpEmailForm from "../components/SignUpEmailForm";
+import SignUpNameForm from "../components/NameForm";
+import SignUpDOBForm from "../components/DOBForm";
+import SignUpPasswordForm from "../components/PasswordForm";
+import SignUpEmailForm from "../components/EmailForm";
 import SignUpPhoneForm from "../components/PhoneForm";
 import {
   PhoneAuthProvider,
@@ -36,9 +36,10 @@ import {
   signInWithPhoneNumber,
 } from "firebase/auth";
 import { auth } from "../services/firebase";
-import SignUpUsernameForm from "../components/SignUpUsernameForm";
+import SignUpUsernameForm from "../components/UsernameForm";
 import { checkUsernameValidity } from "../utils/api";
 import { phoneNumberExists } from "../utils/api";
+import sendVerificationCode from "../utils/sendVerification";
 
 export const getAge = (birthDate: number) =>
   Math.floor(
@@ -51,6 +52,7 @@ const SignUpScreen = ({ navigation }: RootStackScreenProps<"SignUp">) => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState(0);
+  const [verificationId, setVerificationId] = useState("");
   const [countryCode, setCountryCode] = useState("+91");
   const [date, setDate] = useState<Date | null>(null);
   const [password, setPassword] = useState("");
@@ -96,67 +98,88 @@ const SignUpScreen = ({ navigation }: RootStackScreenProps<"SignUp">) => {
   // }
   // };
 
-  const sendVerificationCode = async () => {
-    // The FirebaseRecaptchaVerifierModal ref implements the
-    // FirebaseAuthApplicationVerifier interface and can be
-    // passed directly to `verifyPhoneNumber`.
-    // console.log(
-    //   "🚀 ~ file: SignUpPhoneForm.tsx ~ line 53 ~ sendVerificationCode ~ props.verificationId",
-    //   "hello"
-    // );
+  const sendVerification = async () => {
+    if (!recaptchaVerifier.current) return;
     try {
-      if (!recaptchaVerifier.current) return;
       dispatch(setLoading(true));
       const phoneNumber = `${countryCode}${phone}`;
-      const phoneNumberExist = await phoneNumberExists(phoneNumber);
-      if (phoneNumberExist)
-        dispatch(setError("Account linked to this number already exists."));
-      else {
-        const response = await signInWithPhoneNumber(
-          auth,
-          phoneNumber,
-          recaptchaVerifier.current
-        );
-        //@ts-ignore
-        setConfirmRes(response);
-        // const phoneProvider = new PhoneAuthProvider(auth);
-        // const verificationId = await phoneProvider.verifyPhoneNumber(
-        //   `${countryCode}${phone}`,
-        //   recaptchaVerifier.current
-        // );
-        // setVerificationId(response.verificationId);
-        dispatch(setSuccess("Verification code has been sent to your mobile."));
-      }
-      dispatch(setLoading(false));
-    } catch (err: any) {
-      const { code, message } = err;
-      if (code === "auth/invalid-phone-number")
-        dispatch(setError("Invalid Phone Number"));
-      else if (code === "auth/too-many-requests")
-        dispatch(setError("Too many requests. Please try later."));
-      else dispatch(setError(message));
+      const verificationId = await sendVerificationCode(
+        phoneNumber,
+        (t: string) => {
+          dispatch(setError(t));
+        },
+        recaptchaVerifier.current
+      );
+      setVerificationId(verificationId);
+    } catch (error) {
+      console.log(error);
     } finally {
-      dispatch(setLoading(false));
+      dispatch(setLoading(true));
     }
   };
+
+  // const sendVerificationCode = async () => {
+  //   // The FirebaseRecaptchaVerifierModal ref implements the
+  //   // FirebaseAuthApplicationVerifier interface and can be
+  //   // passed directly to `verifyPhoneNumber`.
+  //   // console.log(
+  //   //   "🚀 ~ file: SignUpPhoneForm.tsx ~ line 53 ~ sendVerificationCode ~ props.verificationId",
+  //   //   "hello"
+  //   // );
+  //   try {
+  //     if (!recaptchaVerifier.current) return;
+  //     dispatch(setLoading(true));
+  //     const phoneNumber = `${countryCode}${phone}`;
+  //     const phoneNumberExist = await phoneNumberExists(phoneNumber);
+  //     if (phoneNumberExist)
+  //       dispatch(setError("Account linked to this number already exists."));
+  //     else {
+  //       const response = await signInWithPhoneNumber(
+  //         auth,
+  //         phoneNumber,
+  //         recaptchaVerifier.current
+  //       );
+  //       //@ts-ignore
+  //       setConfirmRes(response);
+  //       // const phoneProvider = new PhoneAuthProvider(auth);
+  //       // const verificationId = await phoneProvider.verifyPhoneNumber(
+  //       //   `${countryCode}${phone}`,
+  //       //   recaptchaVerifier.current
+  //       // );
+  //       // setVerificationId(response.verificationId);
+  //       dispatch(setSuccess("Verification code has been sent to your mobile."));
+  //     }
+  //     dispatch(setLoading(false));
+  //   } catch (err: any) {
+  //     const { code, message } = err;
+  //     if (code === "auth/invalid-phone-number")
+  //       dispatch(setError("Invalid Phone Number"));
+  //     else if (code === "auth/too-many-requests")
+  //       dispatch(setError("Too many requests. Please try later."));
+  //     else dispatch(setError(message));
+  //   } finally {
+  //     dispatch(setLoading(false));
+  //   }
+  // };
   const handlePhoneSubmit = async (verificationCode: string) => {
     if (!phone) return dispatch(setError("Phone cannot be empty"));
     try {
       dispatch(setLoading(true));
+      const cred = PhoneAuthProvider.credential(
+        verificationId,
+        verificationCode
+      );
+      const { user } = await signInWithCredential(auth, cred);
       //@ts-ignore
       const datestring = date.toString().split(" ").slice(0, 4);
       dispatch(
         signupUserPhone({
-          verificationCode,
-          confirm: confirmRes,
-          userData: {
-            name: `${firstname} ${lastName}`,
-            uid: "",
-            username,
-            phoneNumber: `${countryCode}${phone}`,
-            dob: `${datestring[0]}, ${datestring[2]} ${datestring[1]}, ${datestring[3]}`,
-            age,
-          },
+          name: `${firstname} ${lastName}`,
+          uid: user.uid,
+          username,
+          phoneNumber: `${countryCode}${phone}`,
+          dob: `${datestring[0]}, ${datestring[2]} ${datestring[1]}, ${datestring[3]}`,
+          age,
         })
       );
       // dispatch(setSu{ text: 'Phone authentication successful 👍' });
@@ -289,7 +312,7 @@ const SignUpScreen = ({ navigation }: RootStackScreenProps<"SignUp">) => {
             verificationId={confirmRes?.verificationId}
             countryCode={countryCode}
             setCountryCode={setCountryCode}
-            sendVerificationCode={sendVerificationCode}
+            sendVerificationCode={sendVerification}
             recaptchaVerifier={recaptchaVerifier}
           />
         )

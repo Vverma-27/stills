@@ -18,4 +18,5 @@ export interface IUser {
   coverImage?: string | null;
   age?: number | null;
   dob?: string | null;
+  providerType?: "email" | "phone";
 }

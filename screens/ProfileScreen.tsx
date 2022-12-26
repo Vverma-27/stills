@@ -15,6 +15,8 @@ import {
 } from "@expo/vector-icons";
 import { findSign, SunSign } from "../utils/helpers";
 import LogoutButton from "../components/LogoutButton";
+import { auth } from "../services/firebase";
+import { Link } from "@react-navigation/native";
 
 const ProfileScreen = ({ navigation }: RootStackScreenProps<"Profile">) => {
   const dispatch = useAppDispatch();
@@ -27,6 +29,10 @@ const ProfileScreen = ({ navigation }: RootStackScreenProps<"Profile">) => {
     //@ts-ignore
     () => SunSign[findSign(new Date(user.dob))],
     []
+  );
+  console.log(
+    "🚀 ~ file: ProfileScreen.tsx:32 ~ ProfileScreen ~ sunSign",
+    sunSign
   );
   return (
     <View style={styles.container}>
@@ -84,27 +90,49 @@ const ProfileScreen = ({ navigation }: RootStackScreenProps<"Profile">) => {
             <Text style={styles.stillScore}>{sunSign.name}</Text>
           </View>
         </View>
+        {!auth.currentUser?.emailVerified ? (
+          <View style={styles.section}>
+            <View style={styles.sectionList}>
+              <View style={styles.sectionListItem}>
+                <View style={styles.sectionListItemContent}>
+                  <Ionicons
+                    name="mail"
+                    size={24}
+                    color="rgba(0,0,0,0.8)"
+                    style={{ marginRight: 10 }}
+                  />
+                  <Text style={styles.sectionListItemContentTitle}>
+                    Verify Your Email
+                  </Text>
+                </View>
+                <Ionicons name="close" size={22} color="rgba(0,0,0,0.8)" />
+              </View>
+            </View>
+          </View>
+        ) : null}
         <View style={styles.section}>
           <Text style={styles.sectionHeading}>Friends</Text>
           <View style={styles.sectionList}>
-            <View style={styles.sectionListItem}>
-              <View style={styles.sectionListItemContent}>
+            <Link to={{ screen: "AddFriends" }}>
+              <View style={styles.sectionListItem}>
+                <View style={styles.sectionListItemContent}>
+                  <Ionicons
+                    name="person-add"
+                    size={24}
+                    color="rgba(0,0,0,0.8)"
+                    style={{ marginRight: 10 }}
+                  />
+                  <Text style={styles.sectionListItemContentTitle}>
+                    Add Friends
+                  </Text>
+                </View>
                 <Ionicons
-                  name="person-add"
-                  size={24}
+                  name="chevron-forward"
+                  size={22}
                   color="rgba(0,0,0,0.8)"
-                  style={{ marginRight: 10 }}
                 />
-                <Text style={styles.sectionListItemContentTitle}>
-                  Add Friends
-                </Text>
               </View>
-              <Ionicons
-                name="chevron-forward"
-                size={22}
-                color="rgba(0,0,0,0.8)"
-              />
-            </View>
+            </Link>
             <View style={styles.sectionListItem}>
               <View style={styles.sectionListItemContent}>
                 <FontAwesome5
