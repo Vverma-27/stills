@@ -210,16 +210,16 @@ const PhoneForm = (props: any) => {
 export default PhoneForm;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: 80,
-    alignItems: "center",
-    // overflow: "scroll",
-    justifyContent: "flex-start",
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-  },
+  // container: {
+  //   flex: 1,
+  //   backgroundColor: "#fff",
+  //   paddingTop: 80,
+  //   alignItems: "center",
+  //   // overflow: "scroll",
+  //   justifyContent: "flex-start",
+  //   paddingHorizontal: 16,
+  //   paddingBottom: 20,
+  // },
   disclaimer: {
     fontSize: 11,
     fontWeight: "500",

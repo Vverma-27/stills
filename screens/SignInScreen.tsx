@@ -35,6 +35,7 @@ import {
   PhoneAuthProvider,
   signInWithCredential,
 } from "firebase/auth/react-native";
+import globalStyles from "../styles";
 
 const SignInScreen = ({ navigation }: RootStackScreenProps<"SignIn">) => {
   const [mode, setMode] = useState<"mobile" | "email">("email");
@@ -79,7 +80,7 @@ const SignInScreen = ({ navigation }: RootStackScreenProps<"SignIn">) => {
     } catch (error) {
       console.log(error);
     } finally {
-      dispatch(setLoading(true));
+      dispatch(setLoading(false));
     }
   };
   // const sendVerificationCode = async () => {
@@ -141,12 +142,11 @@ const SignInScreen = ({ navigation }: RootStackScreenProps<"SignIn">) => {
       dispatch(setError(err.message));
       // showMessage({ text: `Error: ${err.message}`, color: 'red' });
     } finally {
-      dispatch(setError(""));
       dispatch(setLoading(false));
     }
   };
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={globalStyles.container}>
       {/* <StatusBar style="dark" /> */}
       <Image
         source={require("../assets/images/logo.png")}
@@ -196,15 +196,15 @@ const SignInScreen = ({ navigation }: RootStackScreenProps<"SignIn">) => {
 export default SignInScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: 80,
-    alignItems: "center",
-    justifyContent: "flex-start",
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-  },
+  // container: {
+  //   flex: 1,
+  //   backgroundColor: "#fff",
+  //   paddingTop: 80,
+  //   alignItems: "center",
+  //   justifyContent: "flex-start",
+  //   paddingHorizontal: 16,
+  //   paddingBottom: 20,
+  // },
   form: { marginBottom: 20, width: "100%" },
   existing: {
     fontSize: 11,

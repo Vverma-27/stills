@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View, Image } from "react-native";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { IAppState, useAppDispatch } from "../redux";
 import { logOutUser } from "../redux/auth";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,18 +17,45 @@ import { findSign, SunSign } from "../utils/helpers";
 import LogoutButton from "../components/LogoutButton";
 import { auth } from "../services/firebase";
 import { Link } from "@react-navigation/native";
+import InfoButton from "../components/InfoButton";
+import { getFriendMetaData, getUserData } from "../utils/api";
+import SubmitButton from "../components/SubmitButton";
+import { FriendRelations } from "../redux/friends/types";
 
-const ProfileScreen = ({ navigation }: RootStackScreenProps<"Profile">) => {
+const ProfileScreen = ({
+  navigation,
+  route,
+}: RootStackScreenProps<"Profile">) => {
   const dispatch = useAppDispatch();
-  const handleLogout = () => {
-    dispatch(logOutUser("h"));
+  const handleLogout = async () => {
+    const resp = await dispatch(logOutUser("h"));
+    if (resp.meta.requestStatus === "fulfilled") navigation.navigate("SignIn");
   };
   const { loading } = useSelector((state: IAppState) => state.auth);
-  const { currentUser: user } = useSelector((state: IAppState) => state.auth);
+  const { currentUser } = useSelector((state: IAppState) => state.auth);
+  const [user, setUser] = useState(currentUser);
+  const [meta, setMeta] = useState<FriendRelations>(
+    FriendRelations.NO_RELATION
+  );
+  useEffect(() => {
+    if (route?.params?.uid) {
+      console.log(
+        "🚀 ~ file: ProfileScreen.tsx:36 ~ useEffect ~ route?.params?.uid",
+        route?.params?.uid
+      );
+      (async () => {
+        const user = await getUserData(route?.params?.uid || "");
+        const relation = await getFriendMetaData(route?.params?.uid || "");
+        setMeta(relation);
+        setUser(user);
+      })();
+    }
+  }, [route?.params?.uid]);
+  console.log("🚀 ~ file: ProfileScreen.tsx:38 ~ user", user);
   const sunSign = useMemo(
     //@ts-ignore
     () => SunSign[findSign(new Date(user.dob))],
-    []
+    [user?.dob]
   );
   console.log(
     "🚀 ~ file: ProfileScreen.tsx:32 ~ ProfileScreen ~ sunSign",
@@ -38,11 +65,7 @@ const ProfileScreen = ({ navigation }: RootStackScreenProps<"Profile">) => {
     <View style={styles.container}>
       <StatusBar style="dark" />
       <View style={styles.coverImageContainer}>
-        {user?.coverImage ? (
-          <Image style={styles.coverImage} source={user.coverImage} />
-        ) : (
-          <SvgLogo />
-        )}
+        <SvgLogo />
       </View>
       <ProfileHeader style={styles.buttonContainer} navigation={navigation} />
       <View style={styles.informationContainer}>
@@ -90,76 +113,129 @@ const ProfileScreen = ({ navigation }: RootStackScreenProps<"Profile">) => {
             <Text style={styles.stillScore}>{sunSign.name}</Text>
           </View>
         </View>
-        {!auth.currentUser?.emailVerified ? (
-          <View style={styles.section}>
-            <View style={styles.sectionList}>
-              <View style={styles.sectionListItem}>
-                <View style={styles.sectionListItemContent}>
-                  <Ionicons
-                    name="mail"
-                    size={24}
-                    color="rgba(0,0,0,0.8)"
-                    style={{ marginRight: 10 }}
-                  />
-                  <Text style={styles.sectionListItemContentTitle}>
-                    Verify Your Email
-                  </Text>
-                </View>
-                <Ionicons name="close" size={22} color="rgba(0,0,0,0.8)" />
+        {route?.params?.uid ? (
+          <View>
+            {meta === FriendRelations.FRIENDS ? (
+              <View style={{ flexDirection: "row" }}>
+                {/* <FontAwesome5 */}
+                <FontAwesome5 name="user-friends" size={24} color="black" />
+                <Text>Friends since 20th January</Text>
               </View>
-            </View>
+            ) : null}
+            <LogoutButton
+              title={(() => {
+                let title = "";
+                switch (meta) {
+                  case FriendRelations.NO_RELATION:
+                    title = "Add Friend";
+                    break;
+                  case FriendRelations.FRIENDS:
+                    title = "Remove Friend";
+                  case FriendRelations.REQUESTED:
+                    title = "Requested";
+                }
+                return title;
+              })()}
+              onPress={() => {}}
+              style={{ marginTop: 20, width: "100%" }}
+              color={(() => {
+                let color = "";
+                switch (meta) {
+                  case FriendRelations.NO_RELATION:
+                    color = "#4DB192";
+                    break;
+                  case FriendRelations.FRIENDS:
+                    color = "#FF7B7B";
+                  case FriendRelations.REQUESTED:
+                    color = "#777";
+                }
+                return color;
+              })()}
+              loading={loading}
+            />
           </View>
-        ) : null}
-        <View style={styles.section}>
-          <Text style={styles.sectionHeading}>Friends</Text>
-          <View style={styles.sectionList}>
-            <Link to={{ screen: "AddFriends" }}>
-              <View style={styles.sectionListItem}>
-                <View style={styles.sectionListItemContent}>
-                  <Ionicons
-                    name="person-add"
-                    size={24}
-                    color="rgba(0,0,0,0.8)"
-                    style={{ marginRight: 10 }}
-                  />
-                  <Text style={styles.sectionListItemContentTitle}>
-                    Add Friends
-                  </Text>
+        ) : (
+          <>
+            {!auth.currentUser?.emailVerified ? (
+              <View style={styles.section}>
+                <View style={styles.sectionList}>
+                  <View style={styles.sectionListItem}>
+                    <View style={styles.sectionListItemContent}>
+                      <Ionicons
+                        name="mail"
+                        size={24}
+                        color="rgba(0,0,0,0.8)"
+                        style={{ marginRight: 10 }}
+                      />
+                      <Pressable
+                        onPress={() =>
+                          navigation.navigate("ConfirmLogin", {
+                            title: "email",
+                          })
+                        }
+                      >
+                        <Text style={styles.sectionListItemContentTitle}>
+                          {user?.email ? "Verify" : "Add"} Your Email
+                        </Text>
+                      </Pressable>
+                    </View>
+                    <Ionicons name="close" size={22} color="rgba(0,0,0,0.8)" />
+                  </View>
                 </View>
-                <Ionicons
-                  name="chevron-forward"
-                  size={22}
-                  color="rgba(0,0,0,0.8)"
+              </View>
+            ) : null}
+            <View style={styles.section}>
+              <Text style={styles.sectionHeading}>Friends</Text>
+              <View style={styles.sectionList}>
+                <InfoButton
+                  onPress={() => navigation.navigate("AddFriends")}
+                  PrecedingIcon={
+                    <Ionicons
+                      name="person-add"
+                      size={24}
+                      color="rgba(0,0,0,0.8)"
+                      style={{ marginRight: 10 }}
+                    />
+                  }
+                  SucceedingIcon={
+                    <Ionicons
+                      name="chevron-forward"
+                      size={22}
+                      color="rgba(0,0,0,0.8)"
+                    />
+                  }
+                  title="Add Friends"
+                />
+                <InfoButton
+                  onPress={() => navigation.navigate("MyFriends")}
+                  PrecedingIcon={
+                    <FontAwesome5
+                      name="user-friends"
+                      size={24}
+                      color="rgba(0,0,0,0.8)"
+                      style={{ marginRight: 10 }}
+                    />
+                  }
+                  SucceedingIcon={
+                    <Ionicons
+                      name="chevron-forward"
+                      size={22}
+                      color="rgba(0,0,0,0.8)"
+                    />
+                  }
+                  title="My Friends"
                 />
               </View>
-            </Link>
-            <View style={styles.sectionListItem}>
-              <View style={styles.sectionListItemContent}>
-                <FontAwesome5
-                  name="user-friends"
-                  size={24}
-                  color="rgba(0,0,0,0.8)"
-                  style={{ marginRight: 10 }}
-                />
-                <Text style={styles.sectionListItemContentTitle}>
-                  My Friends
-                </Text>
-              </View>
-              <Ionicons
-                name="chevron-forward"
-                size={22}
-                color="rgba(0,0,0,0.8)"
-              />
             </View>
-          </View>
-        </View>
-        <LogoutButton
-          title="Log Out"
-          onPress={handleLogout}
-          style={{ marginTop: 20, width: "100%" }}
-          color="#FF7B7B"
-          loading={loading}
-        />
+            <LogoutButton
+              title="Log Out"
+              onPress={handleLogout}
+              style={{ marginTop: 20, width: "100%" }}
+              color="#FF7B7B"
+              loading={loading}
+            />
+          </>
+        )}
         {/* <Pressable onPress={} style={{ backgroundColor: "#fff" }}>
           <Text style={{ color: "#000" }}>Log Out</Text>
         </Pressable> */}

@@ -51,7 +51,7 @@ const ConfirmLogin = (props: RootStackScreenProps<"ConfirmLogin">) => {
     } catch (error) {
       console.log(error);
     } finally {
-      dispatch(setLoading(true));
+      dispatch(setLoading(false));
     }
   };
   // const sendVerificationCode = async () => {

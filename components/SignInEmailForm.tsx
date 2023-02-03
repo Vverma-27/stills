@@ -71,15 +71,15 @@ const SignInEmailForm = (props: any) => {
 export default SignInEmailForm;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: 80,
-    alignItems: "center",
-    justifyContent: "flex-start",
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-  },
+  // container: {
+  //   flex: 1,
+  //   backgroundColor: "#fff",
+  //   paddingTop: 80,
+  //   alignItems: "center",
+  //   justifyContent: "flex-start",
+  //   paddingHorizontal: 16,
+  //   paddingBottom: 20,
+  // },
   form: { marginBottom: 20 },
   existing: {
     fontSize: 11,

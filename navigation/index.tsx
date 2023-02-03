@@ -42,6 +42,7 @@ import SettingsScreen from "../screens/SettingsScreen";
 import SettingsEditScreen from "../screens/SettingsEdit";
 import ConfirmLogin from "../screens/ConfirmLogin";
 import AddFriends from "../screens/AddFriends";
+import MyFriends from "../screens/MyFriends";
 
 export default function Navigation({
   colorScheme,
@@ -72,7 +73,16 @@ function RootNavigator() {
         <>
           <Stack.Group>
             <Stack.Screen name="Root" component={BottomTabNavigator} />
-            <Stack.Screen name="AddFriends" component={AddFriends} />
+            <Stack.Screen
+              name="AddFriends"
+              component={AddFriends}
+              options={{ headerShown: true, headerTitle: "Add Friends" }}
+            />
+            <Stack.Screen
+              name="MyFriends"
+              component={MyFriends}
+              options={{ headerShown: true, headerTitle: "My Friends" }}
+            />
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen
               name="SettingsEdit"

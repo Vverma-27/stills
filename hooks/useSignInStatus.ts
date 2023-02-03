@@ -14,29 +14,13 @@ import { getUserData } from "../utils/api";
 // makes it a bit easier to work with.
 export default function useSignInStatus() {
   const dispatch = useAppDispatch();
-  const { firstLoad, currentUser: actualUser } = useSelector(
-    (state: IAppState) => state.auth
-  );
+  const { firstLoad } = useSelector((state: IAppState) => state.auth);
   useEffect(() => {
-    const idUnsubscribe = onIdTokenChanged(auth, async (user) => {
-      // console.log(
-      //   "🚀 ~ file: useSignInStatus.ts ~ line 22 ~ idUnsubscribe ~ user",
-      //   user
-      // );
-      if (user && actualUser && actualUser.email !== user.email) {
-        console.log(
-          "🚀 ~ file: useSignInStatus.ts:27 ~ idUnsubscribe ~ user.email",
-          user.email
-        );
-        dispatch(updateUser({ email: user.email }));
-      }
-      // return console.log(user);
-    });
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      // console.log(
-      //   "🚀 ~ file: useSignInStatus.ts ~ line 20 ~ unsubscribe ~ firstLoad",
-      //   user?.emailVerified
-      // );
+      console.log(
+        "🚀 ~ file: useSignInStatus.ts:36 ~ unsubscribe ~ user",
+        user
+      );
       if (firstLoad) return;
       if (user) {
         if (user.emailVerified || (user.phoneNumber && !user.email)) {
@@ -54,7 +38,7 @@ export default function useSignInStatus() {
     });
     return () => {
       unsubscribe();
-      idUnsubscribe();
+      // idUnsubscribe();
     };
     // console.log(user);
     // });

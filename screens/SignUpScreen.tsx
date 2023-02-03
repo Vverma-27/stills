@@ -40,6 +40,7 @@ import SignUpUsernameForm from "../components/UsernameForm";
 import { checkUsernameValidity } from "../utils/api";
 import { phoneNumberExists } from "../utils/api";
 import sendVerificationCode from "../utils/sendVerification";
+import globalStyles from "../styles";
 
 export const getAge = (birthDate: number) =>
   Math.floor(
@@ -59,9 +60,9 @@ const SignUpScreen = ({ navigation }: RootStackScreenProps<"SignUp">) => {
   const [rePassword, setRePassword] = useState("");
   const [firstname, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [signInMode, setSignInMode] = useState<"email" | "phone">("phone");
+  const [signInMode, setSignInMode] = useState<"email" | "phone">("email");
   // const [verificationId, setVerificationId] = React.useState("");
-  const [confirmRes, setConfirmRes] = React.useState<any>({});
+  // const [confirmRes, setConfirmRes] = React.useState<any>({});
   const recaptchaVerifier = React.useRef<any>(null);
   const [age, setAge] = useState(0);
   const [step, setStep] = useState(1);
@@ -110,11 +111,15 @@ const SignUpScreen = ({ navigation }: RootStackScreenProps<"SignUp">) => {
         },
         recaptchaVerifier.current
       );
+      // console.log(
+      //   "🚀 ~ file: SignUpScreen.tsx:114 ~ sendVerification ~ verificationId",
+      //   verificationId
+      // );
       setVerificationId(verificationId);
     } catch (error) {
       console.log(error);
     } finally {
-      dispatch(setLoading(true));
+      dispatch(setLoading(false));
     }
   };
 
@@ -187,7 +192,6 @@ const SignUpScreen = ({ navigation }: RootStackScreenProps<"SignUp">) => {
       dispatch(setError(err.message));
       // showMessage({ text: `Error: ${err.message}`, color: 'red' });
     } finally {
-      dispatch(setError(""));
       dispatch(setLoading(false));
     }
   };
@@ -261,7 +265,7 @@ const SignUpScreen = ({ navigation }: RootStackScreenProps<"SignUp">) => {
     dispatch(setLoading(false));
   };
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={globalStyles.container}>
       {/* <StatusBar style="dark" /> */}
       <Image
         source={require("../assets/images/logo.png")}
@@ -309,7 +313,7 @@ const SignUpScreen = ({ navigation }: RootStackScreenProps<"SignUp">) => {
             setPhone={setPhone}
             changeMode={() => setSignInMode("email")}
             handleSubmit={handlePhoneSubmit}
-            verificationId={confirmRes?.verificationId}
+            verificationId={verificationId}
             countryCode={countryCode}
             setCountryCode={setCountryCode}
             sendVerificationCode={sendVerification}
@@ -336,16 +340,16 @@ const SignUpScreen = ({ navigation }: RootStackScreenProps<"SignUp">) => {
 export default SignUpScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: 80,
-    alignItems: "center",
-    // overflow: "scroll",
-    justifyContent: "flex-start",
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-  },
+  // container: {
+  //   flex: 1,
+  //   backgroundColor: "#fff",
+  //   paddingTop: 80,
+  //   alignItems: "center",
+  //   // overflow: "scroll",
+  //   justifyContent: "flex-start",
+  //   paddingHorizontal: 16,
+  //   paddingBottom: 20,
+  // },
   form: { marginBottom: 20 },
   existing: {
     fontSize: 11,

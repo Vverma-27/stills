@@ -19,13 +19,14 @@ declare global {
 
 export type RootStackParamList = {
   Root: NavigatorScreenParams<RootTabParamList> | undefined;
-  Profile: undefined;
+  Profile: { uid?: string };
   SignIn: undefined;
   SignUp: undefined;
   ResetPassword: undefined;
   Settings: undefined;
   SettingsEdit: { title: string };
   AddFriends: undefined;
+  MyFriends: undefined;
   ConfirmLogin: { title: string };
 };
 

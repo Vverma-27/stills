@@ -41,6 +41,8 @@ import {
   verifyBeforeUpdateEmail,
 } from "firebase/auth/react-native";
 import sendVerificationCode from "../utils/sendVerification";
+import globalStyles from "../styles";
+import { getAge } from "./SignUpScreen";
 
 let HAS_CHANGED = false;
 
@@ -72,7 +74,12 @@ const SettingsEditScreen = ({
   // }, [credential]);
 
   const handleSubmit = async (property: string, value: any) => {
-    const response = await dispatch(updateUser({ [property]: value }));
+    let response;
+    if (property === "dob")
+      response = await dispatch(
+        updateUser({ [property]: value, age: getAge(value.getTime()) })
+      );
+    else response = await dispatch(updateUser({ [property]: value }));
     if (response.meta.requestStatus === "fulfilled")
       navigation.navigate("Settings");
   };
@@ -103,6 +110,7 @@ const SettingsEditScreen = ({
             "Your email has been changed and a verification link has been sent to your email. You will be logged out for the time being."
           )
         );
+        dispatch(updateUser({ email }));
         dispatch(logOutUser(""));
       }
       dispatch(setLoading(false));
@@ -136,7 +144,7 @@ const SettingsEditScreen = ({
     } catch (error) {
       console.log(error);
     } finally {
-      dispatch(setLoading(true));
+      dispatch(setLoading(false));
     }
   };
   // const sendVerificationCode = async () => {
@@ -228,7 +236,6 @@ const SettingsEditScreen = ({
       dispatch(setError(err.message));
       // showMessage({ text: `Error: ${err.message}`, color: 'red' });
     } finally {
-      dispatch(setError(""));
       dispatch(setLoading(false));
     }
   };
@@ -312,7 +319,7 @@ const SettingsEditScreen = ({
     }
   })();
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={globalStyles.container}>
       {/* <StatusBar style="dark" /> */}
       <Image
         source={require("../assets/images/logo.png")}
@@ -327,15 +334,15 @@ const SettingsEditScreen = ({
 export default SettingsEditScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: 40,
-    alignItems: "center",
-    justifyContent: "flex-start",
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-  },
+  // container: {
+  //   flex: 1,
+  //   backgroundColor: "#fff",
+  //   paddingTop: 40,
+  //   alignItems: "center",
+  //   justifyContent: "flex-start",
+  //   paddingHorizontal: 16,
+  //   paddingBottom: 20,
+  // },
   form: { marginBottom: 20, width: "100%" },
   existing: {
     fontSize: 11,

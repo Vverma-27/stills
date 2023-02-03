@@ -36,9 +36,8 @@ const sendVerificationCode = async (
     else if (code === "auth/too-many-requests")
       onError("Too many requests. Please try later.");
     else onError(message);
-  } finally {
-    return "";
   }
+  return "";
 };
 
 export default sendVerificationCode;

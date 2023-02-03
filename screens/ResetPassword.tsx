@@ -14,6 +14,7 @@ import { IAppState, useAppDispatch } from "../redux";
 import { setError, setLoading, setSuccess } from "../redux/auth";
 import ToastContainer from "../components/ToastContainer";
 import { useSelector } from "react-redux";
+import globalStyles from "../styles";
 
 const ResetPassword = ({
   navigation,
@@ -42,7 +43,7 @@ const ResetPassword = ({
     }
   };
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={globalStyles.container}>
       {/* <StatusBar style="dark" /> */}
       <Image
         source={require("../assets/images/logo.png")}
@@ -89,15 +90,15 @@ const ResetPassword = ({
 export default ResetPassword;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: 80,
-    alignItems: "center",
-    justifyContent: "flex-start",
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-  },
+  // container: {
+  //   flex: 1,
+  //   backgroundColor: "#fff",
+  //   paddingTop: 80,
+  //   alignItems: "center",
+  //   justifyContent: "flex-start",
+  //   paddingHorizontal: 16,
+  //   paddingBottom: 20,
+  // },
   form: { marginBottom: 20 },
   existing: {
     fontSize: 14,
